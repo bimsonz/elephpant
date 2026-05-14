@@ -1,0 +1,30 @@
+{
+  "name": "elephpant",
+  "version": "0.0.1",
+  "description": "Elephpant — PHPScript (.psx) compiler. PHP-flavored TypeScript.",
+  "license": "MIT OR Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bimsonz/elephpant"
+  },
+  "bin": {
+    "psx": "./bin/psx.js"
+  },
+  "scripts": {
+    "postinstall": "node install.js"
+  },
+  "files": [
+    "bin/",
+    "install.js",
+    "README.md"
+  ],
+  "os": [
+    "darwin",
+    "linux",
+    "win32"
+  ],
+  "cpu": [
+    "x64",
+    "arm64"
+  ]
+}

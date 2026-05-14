@@ -1,0 +1,207 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+env:
+  CARGO_TERM_COLOR: always
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: build ${{ matrix.asset }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: x86_64-unknown-linux-gnu
+            runner: ubuntu-latest
+            asset: psx-linux-x64
+          - target: aarch64-unknown-linux-gnu
+            runner: ubuntu-latest
+            asset: psx-linux-arm64
+            cross: true
+          - target: x86_64-apple-darwin
+            runner: macos-13
+            asset: psx-darwin-x64
+          - target: aarch64-apple-darwin
+            runner: macos-latest
+            asset: psx-darwin-arm64
+          - target: x86_64-pc-windows-msvc
+            runner: windows-latest
+            asset: psx-windows-x64
+            ext: .exe
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.target }}
+      - name: Install cross (linux arm64 only)
+        if: matrix.cross == true
+        run: cargo install cross --locked
+
+      - name: Build (native)
+        if: matrix.cross != true
+        shell: bash
+        run: |
+          cargo build --release --locked --target ${{ matrix.target }} --bin psx
+          cargo build --release --locked --target ${{ matrix.target }} --bin psx-lsp
+      - name: Build (cross)
+        if: matrix.cross == true
+        shell: bash
+        run: |
+          cross build --release --locked --target ${{ matrix.target }} --bin psx
+          cross build --release --locked --target ${{ matrix.target }} --bin psx-lsp
+
+      - name: Prepare artifact
+        shell: bash
+        run: |
+          ext="${{ matrix.ext }}"
+          for bin in psx psx-lsp; do
+            binary="target/${{ matrix.target }}/release/${bin}${ext}"
+            out="${bin}-${{ matrix.asset }}${ext}"
+            # The original `psx` binary keeps its existing release-asset
+            # name (`psx-darwin-arm64`, etc.) for backward-compatible
+            # npm-postinstall lookup; psx-lsp ships with the binary
+            # name prefixed.
+            if [ "$bin" = "psx" ]; then
+              out="${{ matrix.asset }}${ext}"
+            fi
+            cp "$binary" "$out"
+            if command -v shasum >/dev/null 2>&1; then
+              shasum -a 256 "$out" >> "${{ matrix.asset }}.sha256"
+            else
+              sha256sum "$out" >> "${{ matrix.asset }}.sha256"
+            fi
+          done
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.asset }}
+          path: |
+            ${{ matrix.asset }}*
+            psx-lsp-${{ matrix.asset }}*
+
+  publish-github:
+    name: GitHub Release
+    runs-on: ubuntu-latest
+    needs: build
+    outputs:
+      version: ${{ steps.meta.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+      - name: Build SHASUMS256.txt + tag metadata
+        id: meta
+        shell: bash
+        working-directory: artifacts
+        run: |
+          cat *.sha256 > SHASUMS256.txt
+          rm *.sha256
+          ls -la
+          echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: artifacts/*
+          fail_on_unmatched_files: true
+          generate_release_notes: true
+
+  publish-crates:
+    name: cargo publish
+    runs-on: ubuntu-latest
+    needs: publish-github
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: Publish workspace crates in dependency order
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+        shell: bash
+        run: |
+          # crates.io has eventual consistency on the sparse index. Sleep
+          # briefly between publishes so downstream crates can resolve the
+          # version we just pushed.
+          publish() {
+            local crate=$1
+            echo "::group::cargo publish -p $crate"
+            cargo publish --locked -p "$crate"
+            echo "::endgroup::"
+            sleep 30
+          }
+          publish psx-lexer
+          publish psx-ast
+          publish psx-parser
+          publish psx-resolver
+          publish psx-sourcemap
+          publish psx-emitter
+          publish psx-printer
+          publish psx-cli
+          publish psx-lsp
+
+  publish-npm:
+    name: npm publish
+    runs-on: ubuntu-latest
+    needs: publish-github
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+      - name: Pin package version to the release tag
+        working-directory: npm/psx
+        run: |
+          version="${{ needs.publish-github.outputs.version }}"
+          npm version "$version" --no-git-tag-version --allow-same-version
+      - name: Publish
+        working-directory: npm/psx
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --access public
+
+  publish-vscode:
+    name: VS Code Marketplace publish
+    runs-on: ubuntu-latest
+    needs: publish-github
+    steps:
+      - name: Check VSCE_PAT presence
+        id: pat
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+        run: |
+          if [ -z "$VSCE_PAT" ]; then
+            echo "VSCE_PAT secret is not set — skipping VS Code Marketplace publish."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/checkout@v4
+        if: steps.pat.outputs.skip != 'true'
+      - uses: actions/setup-node@v4
+        if: steps.pat.outputs.skip != 'true'
+        with:
+          node-version: '20'
+      - name: Pin extension version to the release tag
+        if: steps.pat.outputs.skip != 'true'
+        working-directory: editors/vscode
+        run: |
+          version="${{ needs.publish-github.outputs.version }}"
+          npm version "$version" --no-git-tag-version --allow-same-version
+      - name: vsce publish
+        if: steps.pat.outputs.skip != 'true'
+        working-directory: editors/vscode
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+        run: npx --yes @vscode/vsce@2 publish --no-dependencies --pat "$VSCE_PAT"

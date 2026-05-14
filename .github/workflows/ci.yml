@@ -1,0 +1,78 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+env:
+  CARGO_TERM_COLOR: always
+  RUSTFLAGS: "-D warnings"
+
+jobs:
+  fmt:
+    name: rustfmt
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+      - run: cargo fmt --all -- --check
+
+  test:
+    name: test (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo test --workspace --all-targets
+
+  e2e:
+    name: end-to-end (psx build + tsc --strict + node)
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Build release psx
+        run: cargo build --release --bin psx
+      - name: Build multi-file example
+        working-directory: examples/multi-file
+        run: ../../target/release/psx build
+      - name: Build traits-demo example
+        working-directory: examples/traits-demo
+        run: ../../target/release/psx build
+      - name: Type-check + emit JS for multi-file
+        working-directory: examples/multi-file
+        run: |
+          npx --yes -p typescript@5 tsc \
+            --target es2022 --module esnext --moduleResolution bundler \
+            --lib esnext --strict \
+            --rootDir dist --outDir dist-js \
+            dist/Main.ts dist/Models/User.ts dist/Util/shout.ts
+          echo '{"type":"module"}' > dist-js/package.json
+      - name: Type-check + emit JS for traits-demo
+        working-directory: examples/traits-demo
+        run: |
+          npx --yes -p typescript@5 tsc \
+            --target es2022 --module esnext --moduleResolution bundler \
+            --lib esnext --strict \
+            --rootDir dist --outDir dist-js \
+            dist/Main.ts dist/Models/User.ts dist/Models/Admin.ts \
+            dist/Traits/Greetable.ts dist/Traits/Shouty.ts
+          echo '{"type":"module"}' > dist-js/package.json
+      - name: Run multi-file demo
+        run: node examples/multi-file/run-demo.mjs
+      - name: Run traits-demo
+        run: node examples/traits-demo/run-demo.mjs

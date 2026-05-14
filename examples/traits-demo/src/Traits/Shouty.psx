@@ -1,0 +1,9 @@
+namespace App\Traits;
+
+trait Shouty {
+    public string $greeting = "OY";
+
+    public function greet(string $name): string {
+        return $this->greeting . "! " . $name;
+    }
+}

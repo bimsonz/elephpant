@@ -1,0 +1,18 @@
+namespace App\Models;
+
+use App\Traits\Greetable;
+use App\Traits\Shouty;
+
+// Admin pulls in two traits that both define `greet`. Without conflict
+// resolution this would emit a marker constant and tsc would complain.
+// `insteadof` picks the Greetable version; `as` exposes Shouty's under
+// a different name so we can still call it explicitly.
+class Admin {
+    use Greetable, Shouty {
+        Greetable::greet insteadof Shouty;
+        Greetable::greeting insteadof Shouty;
+        Shouty::greet as shoutyGreet;
+    }
+
+    public function __construct(public string $email) {}
+}

@@ -1,0 +1,5 @@
+namespace App\Util;
+
+function shout(string $msg): string {
+    return $msg . "!";
+}

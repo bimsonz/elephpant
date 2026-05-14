@@ -1,0 +1,17 @@
+[package]
+name = "psx-emitter"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "TypeScript-source emitter for PHPScript (.psx)"
+readme = "README.md"
+
+[dependencies]
+psx-ast.workspace = true
+psx-sourcemap.workspace = true
+
+[dev-dependencies]
+insta.workspace = true

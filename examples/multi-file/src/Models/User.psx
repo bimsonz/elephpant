@@ -1,0 +1,12 @@
+namespace App\Models;
+
+class User {
+    public function __construct(
+        public readonly string $id,
+        public string $email,
+    ) {}
+
+    public function describe(): string {
+        return $this->id . " <" . $this->email . ">";
+    }
+}

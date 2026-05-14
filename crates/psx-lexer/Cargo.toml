@@ -1,0 +1,13 @@
+[package]
+name = "psx-lexer"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "Lexer for PHPScript (.psx)"
+readme = "README.md"
+
+[dependencies]
+thiserror.workspace = true

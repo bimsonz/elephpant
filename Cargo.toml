@@ -1,0 +1,41 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/psx-lexer",
+    "crates/psx-ast",
+    "crates/psx-parser",
+    "crates/psx-resolver",
+    "crates/psx-sourcemap",
+    "crates/psx-emitter",
+    "crates/psx-printer",
+    "crates/psx-cli",
+]
+
+[workspace.package]
+version = "0.0.1"
+edition = "2021"
+rust-version = "1.85"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/bimsonz/elephpant"
+authors = ["Zach Bimson <zach@bison.digital>"]
+
+[workspace.dependencies]
+psx-lexer = { path = "crates/psx-lexer", version = "0.0.1" }
+psx-ast = { path = "crates/psx-ast", version = "0.0.1" }
+psx-parser = { path = "crates/psx-parser", version = "0.0.1" }
+psx-resolver = { path = "crates/psx-resolver", version = "0.0.1" }
+psx-sourcemap = { path = "crates/psx-sourcemap", version = "0.0.1" }
+psx-emitter = { path = "crates/psx-emitter", version = "0.0.1" }
+psx-printer = { path = "crates/psx-printer", version = "0.0.1" }
+
+clap = { version = "4.5", features = ["derive"] }
+thiserror = "1.0"
+anyhow = "1.0"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+insta = { version = "1.40", features = ["yaml"] }
+
+[profile.release]
+lto = "thin"
+codegen-units = 1
+strip = true

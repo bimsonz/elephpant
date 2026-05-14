@@ -1,0 +1,60 @@
+// PHPScript OOP demo — every Tier C feature exercised.
+
+interface Auditable {
+    public const string EVENT = "audit";
+    public function audit(): void;
+}
+
+enum Role: string {
+    case Admin = "admin";
+    case Member = "member";
+    case Guest = "guest";
+}
+
+abstract class Entity {
+    public function __construct(
+        public readonly string $id,
+    ) {}
+
+    public abstract function describe(): string;
+}
+
+readonly class Address {
+    public function __construct(
+        public string $line1,
+        public string $city,
+    ) {}
+}
+
+final class User extends Entity implements Auditable {
+    public const int MAX_NAME = 64;
+
+    public static int $created = 0;
+
+    public function __construct(
+        string $id,
+        public string $email,
+        public Role $role,
+        private ?Address $address = null,
+    ) {
+        parent::__construct($id);
+        User::$created = User::$created + 1;
+    }
+
+    public function describe(): string {
+        return $this->id . " <" . $this->email . ">";
+    }
+
+    public function audit(): void {
+        $this->describe();
+    }
+
+    public static function bumpCount(): int {
+        User::$created = User::$created + 1;
+        return User::$created;
+    }
+}
+
+$ada = new User("u1", "ada@example.com", Role::Admin);
+$msg = $ada->describe();
+$bumped = User::bumpCount();

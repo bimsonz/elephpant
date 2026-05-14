@@ -1,0 +1,44 @@
+// PHPScript demo — what the language can do today.
+
+function add(int $a, int $b): int {
+    return $a + $b;
+}
+
+function greet(string $name = "world"): string {
+    return "Hello, " . $name . "!";
+}
+
+function classify(int $n): string {
+    if ($n > 0) {
+        $msg = "positive";
+    } elseif ($n < 0) {
+        $msg = "negative";
+    } else {
+        $msg = "zero";
+    }
+    return $msg;
+}
+
+function findUserById(array<User> $users, int $id): ?User {
+    foreach ($users as $user) {
+        if ($user["id"] === $id) {
+            return $user;
+        }
+    }
+    return null;
+}
+
+// Module-level program.
+$nums = [1, 2, 3];
+$ada = ["name" => "Ada", "age" => 36];
+$ada["role"] = "engineer";
+
+$result = add(1, 2);
+$message = greet();
+$label = classify(-5);
+$display = $message . " (" . $label . ")";
+
+$total = 0;
+foreach ($nums as $n) {
+    $total += $n;
+}

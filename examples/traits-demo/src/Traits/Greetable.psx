@@ -1,0 +1,9 @@
+namespace App\Traits;
+
+trait Greetable {
+    public string $greeting = "Hello";
+
+    public function greet(string $name): string {
+        return $this->greeting . ", " . $name;
+    }
+}

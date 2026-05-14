@@ -1,0 +1,33 @@
+// Phase 5: match, ternary, instanceof, throw/try/catch.
+
+class HttpError {
+    public function __construct(public readonly string $message) {}
+}
+
+function classify(int $code): string {
+    return match ($code) {
+        200, 201 => "ok",
+        301, 302 => "redirect",
+        404 => "not found",
+        default => "error",
+    };
+}
+
+function ensurePositive(int $n): int {
+    if ($n <= 0) {
+        throw new HttpError("must be positive");
+    }
+    return $n;
+}
+
+$label = classify(404);
+$adultLabel = 21 >= 18 ? "yes" : "no";
+$displayName = $label ?: "anonymous";
+
+$caught = false;
+try {
+    $value = ensurePositive(-1);
+} catch (HttpError $e) {
+    $value = 0;
+    $caught = true;
+}

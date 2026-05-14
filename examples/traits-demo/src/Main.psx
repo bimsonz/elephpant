@@ -1,0 +1,14 @@
+namespace App;
+
+use App\Models\User;
+use App\Models\Admin;
+
+function makeMessage(): string {
+    $u = new User("ada@example.com");
+    return $u->greet("Ada");
+}
+
+function makeAdminMessage(): string {
+    $a = new Admin("root@example.com");
+    return $a->greet("root") . " | " . $a->shoutyGreet("root");
+}

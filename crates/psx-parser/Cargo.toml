@@ -1,0 +1,15 @@
+[package]
+name = "psx-parser"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "Parser for PHPScript (.psx)"
+readme = "README.md"
+
+[dependencies]
+psx-lexer.workspace = true
+psx-ast.workspace = true
+thiserror.workspace = true

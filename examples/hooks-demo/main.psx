@@ -1,0 +1,35 @@
+// PHP 8.4 property hooks + asymmetric visibility + first-class callable.
+// PHPScript stdlib note: bare `strtolower` etc. don't exist on the JS side
+// — call methods on values directly (`$str->toLowerCase()`).
+
+namespace App;
+
+class User {
+    // get lower-cases on read; set lower-cases on write.
+    public string $email {
+        get => $this->email->toLowerCase();
+        set(string $value) => $value->toLowerCase();
+    }
+
+    // Asym vis: read public, write private.
+    public private(set) string $id;
+
+    public function __construct(string $id, string $email) {
+        $this->id = $id;
+        $this->email = $email;
+    }
+
+    public function emailGetter(): string {
+        return $this->email;
+    }
+}
+
+function makeReader(User $u): string {
+    $cb = $u->emailGetter(...);
+    return $cb();
+}
+
+function main(): string {
+    $u = new User("u1", "ADA@Example.com");
+    return makeReader($u) . " | id=" . $u->id;
+}

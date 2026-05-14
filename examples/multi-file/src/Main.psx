@@ -1,0 +1,13 @@
+namespace App;
+
+use App\Models\User;
+use function App\Util\shout;
+
+class App {
+    public static function greet(User $user): string {
+        return shout("hello {$user->describe()}");
+    }
+}
+
+$ada = new User("u1", "ada@example.com");
+$msg = App::greet($ada);

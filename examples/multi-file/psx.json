@@ -1,0 +1,5 @@
+{
+  "namespace": "App",
+  "src": "src",
+  "outDir": "dist"
+}

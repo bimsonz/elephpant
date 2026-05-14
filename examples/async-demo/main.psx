@@ -1,0 +1,28 @@
+// Async/await demo.
+
+namespace App;
+
+async function delay(int $ms): string {
+    return "waited " . $ms . "ms";
+}
+
+async function chain(): string {
+    $first = await delay(10);
+    $second = await delay(20);
+    return $first . " then " . $second;
+}
+
+class Loader {
+    public async function fetchAll(): array<string> {
+        $a = await delay(1);
+        $b = await delay(2);
+        return [$a, $b];
+    }
+}
+
+async function main(): string {
+    $result = await chain();
+    $loader = new Loader();
+    $items = await $loader->fetchAll();
+    return $result . " | " . $items[0] . " " . $items[1];
+}

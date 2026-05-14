@@ -1,0 +1,29 @@
+[package]
+name = "psx-cli"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "PHPScript (.psx) command-line interface"
+readme = "README.md"
+
+[lib]
+path = "src/lib.rs"
+
+[[bin]]
+name = "psx"
+path = "src/main.rs"
+
+[dependencies]
+psx-ast.workspace = true
+psx-parser.workspace = true
+psx-emitter.workspace = true
+psx-resolver.workspace = true
+clap.workspace = true
+anyhow.workspace = true
+
+[dev-dependencies]
+insta.workspace = true
+serde_json.workspace = true

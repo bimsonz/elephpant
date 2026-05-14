@@ -1,0 +1,291 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "PHPScript",
+  "scopeName": "source.psx",
+  "fileTypes": ["psx"],
+  "patterns": [
+    { "include": "#comments" },
+    { "include": "#namespace-or-use" },
+    { "include": "#strings" },
+    { "include": "#numbers" },
+    { "include": "#keywords" },
+    { "include": "#types" },
+    { "include": "#operators" },
+    { "include": "#class-declaration" },
+    { "include": "#function-declaration" },
+    { "include": "#scope-resolution" },
+    { "include": "#member-access" },
+    { "include": "#variables" },
+    { "include": "#function-call" }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.double-slash.psx",
+          "match": "//.*$"
+        },
+        {
+          "name": "comment.line.number-sign.psx",
+          "match": "#.*$"
+        },
+        {
+          "name": "comment.block.psx",
+          "begin": "/\\*",
+          "end": "\\*/"
+        }
+      ]
+    },
+
+    "namespace-or-use": {
+      "patterns": [
+        {
+          "name": "meta.namespace.psx",
+          "match": "\\b(namespace)\\s+([A-Za-z_][A-Za-z0-9_\\\\]*)",
+          "captures": {
+            "1": { "name": "keyword.other.namespace.psx" },
+            "2": { "name": "entity.name.namespace.psx" }
+          }
+        },
+        {
+          "name": "meta.use.psx",
+          "match": "\\b(use)\\s+([A-Za-z_][A-Za-z0-9_\\\\]*)(?:\\s+(as)\\s+([A-Za-z_][A-Za-z0-9_]*))?",
+          "captures": {
+            "1": { "name": "keyword.other.use.psx" },
+            "2": { "name": "entity.name.namespace.psx" },
+            "3": { "name": "keyword.other.use.as.psx" },
+            "4": { "name": "entity.name.namespace.alias.psx" }
+          }
+        }
+      ]
+    },
+
+    "strings": {
+      "patterns": [
+        { "include": "#double-quoted" },
+        { "include": "#single-quoted" }
+      ]
+    },
+
+    "double-quoted": {
+      "name": "string.quoted.double.psx",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        {
+          "name": "constant.character.escape.psx",
+          "match": "\\\\(?:n|r|t|\\\\|\"|0|x[0-9a-fA-F]{2}|u\\{[0-9a-fA-F]+\\})"
+        },
+        {
+          "name": "meta.embedded.line.psx",
+          "begin": "\\{(?=\\$)",
+          "end": "\\}",
+          "patterns": [
+            { "include": "#variables" },
+            { "include": "#member-access" },
+            { "include": "#scope-resolution" },
+            { "include": "#function-call" }
+          ]
+        },
+        {
+          "name": "variable.other.interpolated.psx",
+          "match": "\\$[A-Za-z_][A-Za-z0-9_]*"
+        }
+      ]
+    },
+
+    "single-quoted": {
+      "name": "string.quoted.single.psx",
+      "begin": "'",
+      "end": "'",
+      "patterns": [
+        {
+          "name": "constant.character.escape.psx",
+          "match": "\\\\(?:'|\\\\)"
+        }
+      ]
+    },
+
+    "numbers": {
+      "patterns": [
+        {
+          "name": "constant.numeric.float.psx",
+          "match": "\\b\\d[\\d_]*\\.[\\d_]*(?:[eE][+-]?\\d+)?\\b|\\b\\d[\\d_]*[eE][+-]?\\d+\\b|\\.\\d[\\d_]*(?:[eE][+-]?\\d+)?\\b"
+        },
+        {
+          "name": "constant.numeric.integer.hex.psx",
+          "match": "\\b0[xX][0-9a-fA-F][0-9a-fA-F_]*\\b"
+        },
+        {
+          "name": "constant.numeric.integer.binary.psx",
+          "match": "\\b0[bB][01][01_]*\\b"
+        },
+        {
+          "name": "constant.numeric.integer.octal.psx",
+          "match": "\\b0[oO][0-7][0-7_]*\\b"
+        },
+        {
+          "name": "constant.numeric.integer.decimal.psx",
+          "match": "\\b\\d[\\d_]*\\b"
+        }
+      ]
+    },
+
+    "keywords": {
+      "patterns": [
+        {
+          "name": "constant.language.psx",
+          "match": "\\b(true|false|null)\\b"
+        },
+        {
+          "name": "keyword.control.psx",
+          "match": "\\b(if|else|elseif|for|foreach|while|do|break|continue|return|match|switch|case|default|yield|try|catch|finally|throw)\\b"
+        },
+        {
+          "name": "keyword.control.async.psx",
+          "match": "\\b(async|await)\\b"
+        },
+        {
+          "name": "keyword.other.psx",
+          "match": "\\b(new|clone|instanceof|insteadof|as|self|parent)\\b"
+        },
+        {
+          "name": "storage.modifier.psx",
+          "match": "\\b(public|private|protected|static|readonly|final|abstract|const)\\b"
+        },
+        {
+          "name": "storage.type.declaration.psx",
+          "match": "\\b(function|fn|class|interface|enum|trait|namespace|use|extends|implements)\\b"
+        }
+      ]
+    },
+
+    "types": {
+      "patterns": [
+        {
+          "name": "support.type.primitive.psx",
+          "match": "\\b(int|float|string|bool|void|never|mixed|array|object|callable|iterable|self|static|parent)\\b"
+        }
+      ]
+    },
+
+    "operators": {
+      "patterns": [
+        {
+          "name": "keyword.operator.comparison.spaceship.psx",
+          "match": "<=>"
+        },
+        {
+          "name": "keyword.operator.comparison.psx",
+          "match": "===|!==|==|!=|<=|>=|<|>"
+        },
+        {
+          "name": "keyword.operator.logical.psx",
+          "match": "&&|\\|\\||!"
+        },
+        {
+          "name": "keyword.operator.coalesce.psx",
+          "match": "\\?\\?=|\\?\\?"
+        },
+        {
+          "name": "keyword.operator.member.nullsafe.psx",
+          "match": "\\?->"
+        },
+        {
+          "name": "keyword.operator.member.psx",
+          "match": "->"
+        },
+        {
+          "name": "keyword.operator.scope.psx",
+          "match": "::"
+        },
+        {
+          "name": "keyword.operator.arrow.psx",
+          "match": "=>"
+        },
+        {
+          "name": "keyword.operator.spread.psx",
+          "match": "\\.\\.\\."
+        },
+        {
+          "name": "keyword.operator.assignment.compound.psx",
+          "match": "\\+=|-=|\\*\\*=|\\*=|/=|%=|\\.="
+        },
+        {
+          "name": "keyword.operator.assignment.psx",
+          "match": "="
+        },
+        {
+          "name": "keyword.operator.arithmetic.psx",
+          "match": "\\+\\+|--|\\*\\*|\\+|-|\\*|/|%"
+        },
+        {
+          "name": "keyword.operator.concat.psx",
+          "match": "(?<=\\s|^|\\))\\.(?=\\s|$|[\"'$])"
+        },
+        {
+          "name": "keyword.operator.ternary.psx",
+          "match": "[?:]"
+        },
+        {
+          "name": "keyword.operator.type.psx",
+          "match": "\\||&"
+        }
+      ]
+    },
+
+    "class-declaration": {
+      "patterns": [
+        {
+          "match": "\\b(class|interface|trait|enum)\\s+([A-Za-z_][A-Za-z0-9_]*)",
+          "captures": {
+            "1": { "name": "storage.type.declaration.psx" },
+            "2": { "name": "entity.name.type.class.psx" }
+          }
+        },
+        {
+          "match": "\\b(extends|implements)\\s+([A-Za-z_][A-Za-z0-9_\\\\]*)",
+          "captures": {
+            "1": { "name": "storage.modifier.psx" },
+            "2": { "name": "entity.other.inherited-class.psx" }
+          }
+        }
+      ]
+    },
+
+    "function-declaration": {
+      "match": "\\b(function)\\s+([A-Za-z_][A-Za-z0-9_]*)\\s*(?=\\()",
+      "captures": {
+        "1": { "name": "storage.type.function.psx" },
+        "2": { "name": "entity.name.function.psx" }
+      }
+    },
+
+    "scope-resolution": {
+      "match": "([A-Za-z_][A-Za-z0-9_]*)\\s*::\\s*([A-Za-z_][A-Za-z0-9_]*)",
+      "captures": {
+        "1": { "name": "entity.name.type.class.psx" },
+        "2": { "name": "variable.other.member.psx" }
+      }
+    },
+
+    "member-access": {
+      "match": "(?:->|\\?->)\\s*([A-Za-z_][A-Za-z0-9_]*)",
+      "captures": {
+        "1": { "name": "variable.other.member.psx" }
+      }
+    },
+
+    "variables": {
+      "match": "\\$[A-Za-z_][A-Za-z0-9_]*",
+      "name": "variable.other.psx"
+    },
+
+    "function-call": {
+      "match": "([A-Za-z_][A-Za-z0-9_]*)\\s*(?=\\()",
+      "captures": {
+        "1": { "name": "entity.name.function.psx" }
+      }
+    }
+  }
+}

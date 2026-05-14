@@ -1,0 +1,28 @@
+[package]
+name = "psx-lsp"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "Language Server Protocol implementation for PHPScript (.psx)"
+readme = "README.md"
+
+[lib]
+path = "src/lib.rs"
+
+[[bin]]
+name = "psx-lsp"
+path = "src/main.rs"
+
+[dependencies]
+psx-ast.workspace = true
+psx-parser.workspace = true
+psx-resolver.workspace = true
+psx-sourcemap.workspace = true
+psx-printer.workspace = true
+tokio.workspace = true
+tower-lsp.workspace = true
+dashmap.workspace = true
+anyhow.workspace = true

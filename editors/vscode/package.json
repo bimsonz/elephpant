@@ -1,0 +1,74 @@
+{
+  "name": "psx-vscode",
+  "displayName": "PHPScript",
+  "description": "Syntax highlighting + language server for PHPScript (.psx) — PHP-flavored TypeScript.",
+  "version": "0.0.1",
+  "publisher": "bimsonz",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bimsonz/elephpant",
+    "directory": "editors/vscode"
+  },
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "keywords": [
+    "phpscript",
+    "psx",
+    "php",
+    "typescript"
+  ],
+  "main": "./out/extension.js",
+  "activationEvents": [
+    "onLanguage:psx"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "psx",
+        "aliases": [
+          "PHPScript",
+          "psx"
+        ],
+        "extensions": [
+          ".psx"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "psx",
+        "scopeName": "source.psx",
+        "path": "./syntaxes/psx.tmLanguage.json"
+      }
+    ],
+    "configuration": {
+      "title": "PHPScript",
+      "properties": {
+        "psx.serverPath": {
+          "type": "string",
+          "default": "",
+          "description": "Absolute path to the psx-lsp binary. Leave empty to use the bundled binary (or PATH)."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "compile": "tsc -p .",
+    "watch": "tsc -p . -w",
+    "vscode:prepublish": "npm run compile"
+  },
+  "dependencies": {
+    "vscode-languageclient": "^9.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.80.0",
+    "typescript": "^5.0.0"
+  }
+}
